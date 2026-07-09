@@ -1,7 +1,8 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/field";
+import { Input, Textarea } from "@/components/ui/field";
 import { formatCurrency, lineItemAmount } from "@/lib/calculations";
 import { Currency, LineItem, makeEmptyItem } from "@/lib/types";
 import { cn } from "@/lib/cn";
@@ -14,6 +15,18 @@ interface Props {
 }
 
 export function ItemsForm({ items, currency, showHsn, onChange }: Props) {
+  const descRefs = useRef(new Map<string, HTMLTextAreaElement>());
+  const pendingFocusId = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!pendingFocusId.current) return;
+    const el = descRefs.current.get(pendingFocusId.current);
+    if (el) {
+      el.focus();
+      pendingFocusId.current = null;
+    }
+  }, [items]);
+
   function update(id: string, patch: Partial<LineItem>) {
     onChange(items.map((item) => (item.id === id ? { ...item, ...patch } : item)));
   }
@@ -22,8 +35,10 @@ export function ItemsForm({ items, currency, showHsn, onChange }: Props) {
     onChange(items.filter((item) => item.id !== id));
   }
 
-  function add() {
-    onChange([...items, makeEmptyItem()]);
+  function add(focusNew = false) {
+    const newItem = makeEmptyItem();
+    if (focusNew) pendingFocusId.current = newItem.id;
+    onChange([...items, newItem]);
   }
 
   const gridCols = showHsn
@@ -42,19 +57,27 @@ export function ItemsForm({ items, currency, showHsn, onChange }: Props) {
       </div>
 
       <div className="flex flex-col gap-3 sm:gap-1.5">
-        {items.map((item) => (
+        {items.map((item, index) => {
+          const isLast = index === items.length - 1;
+          return (
           <div
             key={item.id}
             className={cn(
-              "grid grid-cols-2 gap-2 rounded-lg border border-border-subtle p-3 sm:items-center sm:rounded-none sm:border-none sm:p-0",
+              "grid grid-cols-2 gap-2 rounded-lg border border-border-subtle p-3 sm:items-start sm:rounded-none sm:border-none sm:p-0",
               gridCols,
             )}
           >
             <div className="col-span-2 sm:col-span-1">
-              <Input
+              <Textarea
+                ref={(el) => {
+                  if (el) descRefs.current.set(item.id, el);
+                  else descRefs.current.delete(item.id);
+                }}
                 value={item.description}
                 onChange={(e) => update(item.id, { description: e.target.value })}
-                placeholder="Describe the work"
+                placeholder="Describe the work — press Enter for a new line"
+                rows={1}
+                className="[field-sizing:content] min-h-[38px] py-2"
               />
             </div>
             {showHsn && (
@@ -77,6 +100,12 @@ export function ItemsForm({ items, currency, showHsn, onChange }: Props) {
               min={0}
               value={item.rate}
               onChange={(e) => update(item.id, { rate: Number(e.target.value) })}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && isLast) {
+                  e.preventDefault();
+                  add(true);
+                }
+              }}
               aria-label="Rate"
             />
             <div className="col-span-2 flex items-center justify-between sm:col-span-1 sm:justify-end">
@@ -104,10 +133,17 @@ export function ItemsForm({ items, currency, showHsn, onChange }: Props) {
               <span className="sm:hidden">Remove</span>
             </button>
           </div>
-        ))}
+          );
+        })}
       </div>
 
-      <Button type="button" variant="secondary" size="sm" onClick={add} className="self-start">
+      <Button
+        type="button"
+        variant="secondary"
+        size="sm"
+        onClick={() => add(true)}
+        className="self-start"
+      >
         <svg width="12" height="12" viewBox="0 0 15 15" fill="none">
           <path d="M7.5 2v11M2 7.5h11" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
         </svg>

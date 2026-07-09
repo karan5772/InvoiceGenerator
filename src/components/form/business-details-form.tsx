@@ -4,6 +4,7 @@ import { ChangeEvent, useRef } from "react";
 import { Field, Input, Select, Textarea } from "@/components/ui/field";
 import { BusinessProfile, INDIAN_STATES } from "@/lib/types";
 import { cn } from "@/lib/cn";
+import { gstinError, panError } from "@/lib/validation";
 
 interface Props {
   profile: BusinessProfile;
@@ -118,6 +119,7 @@ export function BusinessDetailsForm({ profile, onChange }: Props) {
       <div className="grid grid-cols-2 gap-4">
         <Field label="Your name / business name" required className="col-span-2">
           <Input
+            id="business-name-input"
             value={profile.name}
             onChange={(e) => onChange({ name: e.target.value })}
             placeholder="Aarav Sharma"
@@ -165,7 +167,11 @@ export function BusinessDetailsForm({ profile, onChange }: Props) {
             ))}
           </Select>
         </Field>
-        <Field label="PAN" hint="Helps clients avoid higher TDS under Sec 206AA">
+        <Field
+          label="PAN"
+          hint="Helps clients avoid higher TDS under Sec 206AA"
+          error={panError(profile.pan)}
+        >
           <Input
             value={profile.pan}
             onChange={(e) => onChange({ pan: e.target.value.toUpperCase() })}
@@ -177,6 +183,7 @@ export function BusinessDetailsForm({ profile, onChange }: Props) {
         <Field
           label="GSTIN"
           hint="Leave blank if you're not registered under GST"
+          error={gstinError(profile.gstin)}
         >
           <Input
             value={profile.gstin}

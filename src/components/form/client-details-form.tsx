@@ -2,6 +2,7 @@
 
 import { Field, Input, Select, Textarea } from "@/components/ui/field";
 import { ClientDetails, INDIAN_STATES } from "@/lib/types";
+import { gstinError } from "@/lib/validation";
 
 const COMMON_COUNTRIES = [
   "India",
@@ -79,6 +80,7 @@ export function ClientDetailsForm({ client, onChange }: Props) {
       <Field
         label="Client GSTIN"
         hint="Only if the client is GST-registered in India"
+        error={gstinError(client.gstin)}
         className="col-span-2"
       >
         <Input

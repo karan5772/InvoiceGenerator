@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { CardSection } from "@/components/ui/card";
@@ -11,12 +11,47 @@ import { ItemsForm } from "@/components/form/items-form";
 import { TaxSettingsForm } from "@/components/form/tax-settings-form";
 import { NotesForm } from "@/components/form/notes-form";
 import { InvoicePreview } from "@/components/invoice-preview";
-import { usePersistedState } from "@/lib/storage";
-import { createSampleInvoice } from "@/lib/sample-data";
+import { nextInvoiceNumber, usePersistedState } from "@/lib/storage";
+import { addDaysISO, createSampleInvoice, todayISO } from "@/lib/sample-data";
 import { InvoiceState, makeEmptyItem } from "@/lib/types";
-import { computeTax } from "@/lib/calculations";
+import { computeTax, lineItemAmount } from "@/lib/calculations";
 
 const STORAGE_KEY = "invoice-generator:v1";
+const LG_BREAKPOINT = 1024;
+const VIEWPORT_OFFSET = 128; // header + sticky top offset + bottom breathing room
+
+function useFitToViewport(contentRef: React.RefObject<HTMLDivElement | null>, deps: unknown[]) {
+  const [scale, setScale] = useState(1);
+  const [naturalHeight, setNaturalHeight] = useState(0);
+
+  useEffect(() => {
+    function recalc() {
+      const el = contentRef.current;
+      if (!el) return;
+      if (window.innerWidth < LG_BREAKPOINT) {
+        setScale(1);
+        setNaturalHeight(0);
+        return;
+      }
+      const natural = el.scrollHeight;
+      const available = window.innerHeight - VIEWPORT_OFFSET;
+      setNaturalHeight(natural);
+      setScale(natural > 0 && available > 0 ? Math.min(1, available / natural) : 1);
+    }
+
+    recalc();
+    const ro = new ResizeObserver(recalc);
+    if (contentRef.current) ro.observe(contentRef.current);
+    window.addEventListener("resize", recalc);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", recalc);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, deps);
+
+  return { scale, naturalHeight };
+}
 
 function blankInvoice(): InvoiceState {
   const sample = createSampleInvoice();
@@ -41,6 +76,36 @@ export default function Home() {
     [invoice.items, invoice.meta.gstTreatment],
   );
 
+  const previewContentRef = useRef<HTMLDivElement>(null);
+  const { scale, naturalHeight } = useFitToViewport(previewContentRef, [invoice]);
+
+  const [activeSection, setActiveSection] = useState<number | null>(1);
+  function toggleSection(section: number) {
+    setActiveSection((prev) => (prev === section ? null : section));
+  }
+
+  const completion = useMemo(() => {
+    const yourDetails = Boolean(invoice.profile.name.trim() && invoice.profile.email.trim());
+    const clientDetails = Boolean(invoice.client.name.trim());
+    const invoiceMeta = Boolean(invoice.meta.number.trim() && invoice.meta.date);
+    const lineItems =
+      invoice.items.length > 0 &&
+      invoice.items.every((item) => item.description.trim().length > 0) &&
+      invoice.items.some((item) => lineItemAmount(item) > 0);
+    return { yourDetails, clientDetails, invoiceMeta, lineItems };
+  }, [invoice]);
+
+  useEffect(() => {
+    if (hydrated && !invoice.profile.name) {
+      // Re-open and focus section 1 after hydration reveals an empty profile
+      // (fresh load or just cleared) — a one-time reaction to external state.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setActiveSection(1);
+      document.getElementById("business-name-input")?.focus();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hydrated]);
+
   function patchProfile(patch: Partial<InvoiceState["profile"]>) {
     setInvoice((prev) => ({ ...prev, profile: { ...prev.profile, ...patch } }));
   }
@@ -57,6 +122,21 @@ export default function Home() {
   function handleClear() {
     setInvoice(blankInvoice());
     setShowClearConfirm(false);
+  }
+
+  function handleNewInvoice() {
+    setInvoice((prev) => ({
+      ...prev,
+      client: { ...prev.client, name: "", email: "", address: "", gstin: "" },
+      items: [makeEmptyItem()],
+      meta: {
+        ...prev.meta,
+        number: nextInvoiceNumber(prev.meta.number),
+        date: todayISO(),
+        dueDate: addDaysISO(15),
+        notes: "",
+      },
+    }));
   }
 
   function handleDownload() {
@@ -95,9 +175,14 @@ export default function Home() {
                 </Button>
               </div>
             ) : (
-              <Button size="sm" variant="ghost" onClick={() => setShowClearConfirm(true)}>
-                Clear
-              </Button>
+              <>
+                <Button size="sm" variant="ghost" onClick={handleNewInvoice}>
+                  New invoice
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => setShowClearConfirm(true)}>
+                  Clear
+                </Button>
+              </>
             )}
             <ThemeToggle />
             <Button size="sm" onClick={handleDownload}>
@@ -118,19 +203,47 @@ export default function Home() {
 
       <main className="no-print mx-auto grid w-full max-w-[1400px] flex-1 grid-cols-1 gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-8 lg:py-8">
         <div className="flex flex-col gap-4">
-          <CardSection step={1} title="Your details" description="Appears as the invoice issuer">
+          <CardSection
+            step={1}
+            complete={completion.yourDetails}
+            title="Your details"
+            description="Appears as the invoice issuer"
+            open={activeSection === 1}
+            onToggle={() => toggleSection(1)}
+          >
             <BusinessDetailsForm profile={invoice.profile} onChange={patchProfile} />
           </CardSection>
 
-          <CardSection step={2} title="Client details" description="Who you're billing">
+          <CardSection
+            step={2}
+            complete={completion.clientDetails}
+            title="Client details"
+            description="Who you're billing"
+            open={activeSection === 2}
+            onToggle={() => toggleSection(2)}
+          >
             <ClientDetailsForm client={invoice.client} onChange={patchClient} />
           </CardSection>
 
-          <CardSection step={3} title="Invoice details" description="Number, dates & currency">
+          <CardSection
+            step={3}
+            complete={completion.invoiceMeta}
+            title="Invoice details"
+            description="Number, dates & currency"
+            open={activeSection === 3}
+            onToggle={() => toggleSection(3)}
+          >
             <MetaForm meta={invoice.meta} onChange={patchMeta} />
           </CardSection>
 
-          <CardSection step={4} title="Line items" description="What you're billing for">
+          <CardSection
+            step={4}
+            complete={completion.lineItems}
+            title="Line items"
+            description="What you're billing for"
+            open={activeSection === 4}
+            onToggle={() => toggleSection(4)}
+          >
             <ItemsForm
               items={invoice.items}
               currency={invoice.meta.currency}
@@ -143,6 +256,8 @@ export default function Home() {
             step={5}
             title="Tax & compliance"
             description="GST treatment and TDS reference"
+            open={activeSection === 5}
+            onToggle={() => toggleSection(5)}
           >
             <TaxSettingsForm
               profile={invoice.profile}
@@ -152,7 +267,13 @@ export default function Home() {
             />
           </CardSection>
 
-          <CardSection step={6} title="Notes & terms" description="Optional">
+          <CardSection
+            step={6}
+            title="Notes & terms"
+            description="Optional"
+            open={activeSection === 6}
+            onToggle={() => toggleSection(6)}
+          >
             <NotesForm meta={invoice.meta} onChange={patchMeta} />
           </CardSection>
 
@@ -171,12 +292,26 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="flex flex-col gap-3 lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:self-start">
+        <div className="flex flex-col gap-3 lg:sticky lg:top-20 lg:self-start">
           <div
             id="invoice-preview-scale-wrap"
-            className="lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:overscroll-contain lg:pr-1"
+            className="lg:flex lg:justify-center"
+            style={
+              scale < 1
+                ? { height: naturalHeight * scale, overflow: "hidden" }
+                : undefined
+            }
           >
-            <InvoicePreview invoice={invoice} />
+            <div
+              ref={previewContentRef}
+              style={
+                scale < 1
+                  ? { transform: `scale(${scale})`, transformOrigin: "top center" }
+                  : undefined
+              }
+            >
+              <InvoicePreview invoice={invoice} />
+            </div>
           </div>
           {tax.treatment !== "unregistered" && (
             <p className="shrink-0 px-1 text-center text-[11px] text-text-tertiary">

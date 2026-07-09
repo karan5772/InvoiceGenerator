@@ -1,6 +1,13 @@
 "use client";
 
-import { computeTax, estimateTds, formatCurrency, lineItemAmount, numberToWords, subtotal } from "@/lib/calculations";
+import {
+  computeTax,
+  estimateTds,
+  formatCurrency,
+  lineItemAmount,
+  numberToWords,
+  subtotal,
+} from "@/lib/calculations";
 import { InvoiceState } from "@/lib/types";
 
 interface Props {
@@ -11,7 +18,11 @@ function formatDate(iso: string): string {
   if (!iso) return "—";
   const d = new Date(`${iso}T00:00:00`);
   if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+  return d.toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 }
 
 export function InvoicePreview({ invoice }: Props) {
@@ -35,41 +46,61 @@ export function InvoicePreview({ invoice }: Props) {
     >
       <div className="flex flex-col gap-8 p-8 sm:p-12">
         {/* Header */}
-        <div className="flex flex-wrap items-start justify-between gap-6 border-b border-[#d6d6d6] pb-6">
-          <div className="flex items-start gap-3">
-            {profile.logo && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={profile.logo} alt="" className="size-12 rounded-md object-cover" />
-            )}
-            <div>
-              <h1 className="text-lg font-semibold text-[#111]">
-                {profile.name || "Your name"}
-              </h1>
-              {profile.tagline && (
-                <p className="mt-0.5 text-xs text-[#666]">{profile.tagline}</p>
+        <div className="border-b border-[#d6d6d6] pb-6">
+          <h2 className="text-center font-mono text-2xl font-semibold tracking-tight text-[#111]">
+            INVOICE
+          </h2>
+
+          <div className="mt-6 flex flex-wrap items-start justify-between gap-6">
+            <div className="flex items-start gap-3">
+              {profile.logo && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={profile.logo}
+                  alt=""
+                  className="size-12 rounded-md object-cover"
+                />
               )}
-              <div className="mt-2 space-y-0.5 text-xs text-[#666]">
-                {profile.address.split("\n").map((line, i) => (
-                  <p key={i}>{line}</p>
-                ))}
-                {profile.email && <p>{profile.email}</p>}
-                {profile.phone && <p>{profile.phone}</p>}
+              <div>
+                <h1 className="text-lg font-semibold text-[#111]">
+                  {profile.name || "Your name"}
+                </h1>
+                {profile.tagline && (
+                  <p className="mt-0.5 text-xs text-[#666]">{profile.tagline}</p>
+                )}
+                <div className="mt-2 space-y-0.5 text-xs text-[#666]">
+                  {profile.address.split("\n").map((line, i) => (
+                    <p key={i}>{line}</p>
+                  ))}
+                </div>
+                {(profile.email || profile.phone) && (
+                  <div className="mt-2 space-y-0.5 text-xs text-[#666]">
+                    {profile.email && <p>{profile.email}</p>}
+                    {profile.phone && <p>{profile.phone}</p>}
+                  </div>
+                )}
               </div>
             </div>
-          </div>
-          <div className="text-right">
-            <h2 className="font-mono text-2xl font-semibold tracking-tight text-[#111]">
-              INVOICE
-            </h2>
-            <p className="mt-1 font-mono text-sm text-[#666]">{meta.number || "—"}</p>
-            <div className="mt-3 space-y-1 text-xs">
-              <div className="flex justify-between gap-6">
-                <span className="text-[#999]">Date issued</span>
-                <span className="font-medium text-[#111]">{formatDate(meta.date)}</span>
-              </div>
-              <div className="flex justify-between gap-6">
-                <span className="text-[#999]">Due date</span>
-                <span className="font-medium text-[#111]">{formatDate(meta.dueDate)}</span>
+            <div className="text-right">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-[#999]">
+                Invoice details
+              </p>
+              <p className="mt-1.5 font-mono text-sm text-[#111]">
+                Invoice No. {meta.number || "—"}
+              </p>
+              <div className="mt-3 space-y-1 text-xs">
+                <div className="flex justify-between gap-6">
+                  <span className="text-[#999]">Date issued</span>
+                  <span className="font-medium text-[#111]">
+                    {formatDate(meta.date)}
+                  </span>
+                </div>
+                <div className="flex justify-between gap-6">
+                  <span className="text-[#999]">Due date</span>
+                  <span className="font-medium text-[#111]">
+                    {formatDate(meta.dueDate)}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -81,7 +112,9 @@ export function InvoicePreview({ invoice }: Props) {
             <p className="text-[11px] font-semibold uppercase tracking-wide text-[#999]">
               Billed by
             </p>
-            <p className="mt-1.5 text-sm font-medium text-[#111]">{profile.name || "—"}</p>
+            <p className="mt-1.5 text-sm font-medium text-[#111]">
+              {profile.name || "—"}
+            </p>
             {profile.pan && (
               <p className="mt-1 text-xs text-[#666]">
                 PAN <span className="font-mono">{profile.pan}</span>
@@ -103,7 +136,9 @@ export function InvoicePreview({ invoice }: Props) {
             <p className="text-[11px] font-semibold uppercase tracking-wide text-[#999]">
               Billed to
             </p>
-            <p className="mt-1.5 text-sm font-medium text-[#111]">{client.name || "—"}</p>
+            <p className="mt-1.5 text-sm font-medium text-[#111]">
+              {client.name || "—"}
+            </p>
             {client.gstin && (
               <p className="mt-1 text-xs text-[#666]">
                 GSTIN <span className="font-mono">{client.gstin}</span>
@@ -113,7 +148,9 @@ export function InvoicePreview({ invoice }: Props) {
               {client.state ? `${client.state}, ` : ""}
               {client.country}
             </p>
-            {client.email && <p className="text-xs text-[#666]">{client.email}</p>}
+            {client.email && (
+              <p className="text-xs text-[#666]">{client.email}</p>
+            )}
           </div>
         </div>
 
@@ -121,9 +158,11 @@ export function InvoicePreview({ invoice }: Props) {
         <div>
           <table className="w-full border-collapse text-sm">
             <thead>
-              <tr className="border-b border-[#111] text-left text-[11px] uppercase tracking-wide text-[#999]">
+              <tr className="border-b border-[#bbb] text-left text-[11px] uppercase tracking-wide text-[#999]">
                 <th className="py-2 font-medium">Description</th>
-                {showHsn && <th className="py-2 pr-3 text-right font-medium">SAC</th>}
+                {showHsn && (
+                  <th className="py-2 pr-3 text-right font-medium">SAC</th>
+                )}
                 <th className="py-2 pr-3 text-right font-medium">Qty</th>
                 <th className="py-2 pr-3 text-right font-medium">Rate</th>
                 <th className="py-2 text-right font-medium">Amount</th>
@@ -132,7 +171,7 @@ export function InvoicePreview({ invoice }: Props) {
             <tbody>
               {items.map((item) => (
                 <tr key={item.id} className="border-b border-[#e2e2e2]">
-                  <td className="py-2.5 pr-3 align-top text-[#111]">
+                  <td className="whitespace-pre-line py-2.5 pr-3 align-top text-[#111]">
                     {item.description || "—"}
                   </td>
                   {showHsn && (
@@ -168,18 +207,24 @@ export function InvoicePreview({ invoice }: Props) {
               <>
                 <div className="flex justify-between">
                   <span className="text-[#666]">CGST (9%)</span>
-                  <span className="font-mono text-[#111]">{formatCurrency(tax.cgst, meta.currency)}</span>
+                  <span className="font-mono text-[#111]">
+                    {formatCurrency(tax.cgst, meta.currency)}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-[#666]">SGST (9%)</span>
-                  <span className="font-mono text-[#111]">{formatCurrency(tax.sgst, meta.currency)}</span>
+                  <span className="font-mono text-[#111]">
+                    {formatCurrency(tax.sgst, meta.currency)}
+                  </span>
                 </div>
               </>
             )}
             {tax.treatment === "inter_state" && (
               <div className="flex justify-between">
                 <span className="text-[#666]">IGST (18%)</span>
-                <span className="font-mono text-[#111]">{formatCurrency(tax.igst, meta.currency)}</span>
+                <span className="font-mono text-[#111]">
+                  {formatCurrency(tax.igst, meta.currency)}
+                </span>
               </div>
             )}
             {tax.treatment === "export_lut" && (
@@ -188,7 +233,7 @@ export function InvoicePreview({ invoice }: Props) {
                 <span className="font-mono text-[#111]">Zero-rated (LUT)</span>
               </div>
             )}
-            <div className="flex justify-between border-t border-[#111] pt-1.5 text-base font-semibold">
+            <div className="flex justify-between border-t border-[#bbb] pt-1.5 text-base font-semibold">
               <span className="text-[#111]">Total</span>
               <span className="font-mono text-[#111]">
                 {formatCurrency(tax.grandTotal, meta.currency)}
@@ -197,14 +242,18 @@ export function InvoicePreview({ invoice }: Props) {
             {meta.showTdsNote && tdsAmount > 0 && (
               <div className="mt-2 space-y-1 border-t border-dashed border-[#d6d6d6] pt-2 text-xs text-[#999]">
                 <div className="flex justify-between">
-                  <span>Est. TDS (Sec {meta.tdsSection}, {meta.tdsRate}%)</span>
+                  <span>
+                    Est. TDS (Sec {meta.tdsSection}, {meta.tdsRate}%)
+                  </span>
                   <span className="font-mono">
                     -{formatCurrency(tdsAmount, meta.currency)}
                   </span>
                 </div>
                 <div className="flex justify-between font-medium text-[#666]">
                   <span>Net receivable after TDS</span>
-                  <span className="font-mono">{formatCurrency(netAfterTds, meta.currency)}</span>
+                  <span className="font-mono">
+                    {formatCurrency(netAfterTds, meta.currency)}
+                  </span>
                 </div>
               </div>
             )}
@@ -220,8 +269,8 @@ export function InvoicePreview({ invoice }: Props) {
 
         {isExport && (
           <p className="rounded-md border border-[#d6d6d6] bg-[#fafafa] px-3 py-2 text-[11px] leading-snug text-[#666]">
-            Supply meant for export under Letter of Undertaking (LUT) without payment of
-            integrated tax.
+            Supply meant for export under Letter of Undertaking (LUT) without
+            payment of integrated tax.
           </p>
         )}
 
@@ -237,7 +286,10 @@ export function InvoicePreview({ invoice }: Props) {
                 {profile.bank.bankName && <p>{profile.bank.bankName}</p>}
                 {profile.bank.accountNumber && (
                   <p>
-                    A/C <span className="font-mono">{profile.bank.accountNumber}</span>
+                    A/C{" "}
+                    <span className="font-mono">
+                      {profile.bank.accountNumber}
+                    </span>
                   </p>
                 )}
                 {profile.bank.ifsc && (
@@ -247,7 +299,8 @@ export function InvoicePreview({ invoice }: Props) {
                 )}
                 {profile.bank.swiftCode && (
                   <p>
-                    SWIFT <span className="font-mono">{profile.bank.swiftCode}</span>
+                    SWIFT{" "}
+                    <span className="font-mono">{profile.bank.swiftCode}</span>
                   </p>
                 )}
               </div>
@@ -257,7 +310,9 @@ export function InvoicePreview({ invoice }: Props) {
                 <p className="text-[11px] font-semibold uppercase tracking-wide text-[#999]">
                   UPI
                 </p>
-                <p className="mt-1.5 font-mono text-[#666]">{profile.bank.upiId}</p>
+                <p className="mt-1.5 font-mono text-[#666]">
+                  {profile.bank.upiId}
+                </p>
               </div>
             )}
           </div>

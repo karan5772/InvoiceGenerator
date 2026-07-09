@@ -86,8 +86,10 @@ body {
   color: var(--accent-foreground);
 }
 
-* {
-  border-color: var(--border-subtle);
+@layer base {
+  * {
+    border-color: var(--border-subtle);
+  }
 }
 
 /* Scrollbar */

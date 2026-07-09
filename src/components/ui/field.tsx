@@ -1,6 +1,12 @@
 "use client";
 
-import { InputHTMLAttributes, ReactNode, SelectHTMLAttributes, TextareaHTMLAttributes } from "react";
+import {
+  InputHTMLAttributes,
+  ReactNode,
+  SelectHTMLAttributes,
+  TextareaHTMLAttributes,
+  forwardRef,
+} from "react";
 import { cn } from "@/lib/cn";
 
 const controlBase =
@@ -9,12 +15,13 @@ const controlBase =
 interface FieldProps {
   label?: string;
   hint?: string;
+  error?: string;
   required?: boolean;
   children: ReactNode;
   className?: string;
 }
 
-export function Field({ label, hint, required, children, className }: FieldProps) {
+export function Field({ label, hint, error, required, children, className }: FieldProps) {
   return (
     <label className={cn("flex flex-col gap-1.5", className)}>
       {label && (
@@ -24,20 +31,27 @@ export function Field({ label, hint, required, children, className }: FieldProps
         </span>
       )}
       {children}
-      {hint && <span className="text-[11px] leading-snug text-text-tertiary">{hint}</span>}
+      {error ? (
+        <span className="text-[11px] leading-snug text-red-500">{error}</span>
+      ) : (
+        hint && <span className="text-[11px] leading-snug text-text-tertiary">{hint}</span>
+      )}
     </label>
   );
 }
 
-export function Input(props: InputHTMLAttributes<HTMLInputElement>) {
-  const { className, ...rest } = props;
-  return <input className={cn(controlBase, className)} {...rest} />;
-}
+export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(
+  function Input({ className, ...rest }, ref) {
+    return <input ref={ref} className={cn(controlBase, className)} {...rest} />;
+  },
+);
 
-export function Textarea(props: TextareaHTMLAttributes<HTMLTextAreaElement>) {
-  const { className, ...rest } = props;
-  return <textarea className={cn(controlBase, "resize-none", className)} {...rest} />;
-}
+export const Textarea = forwardRef<
+  HTMLTextAreaElement,
+  TextareaHTMLAttributes<HTMLTextAreaElement>
+>(function Textarea({ className, ...rest }, ref) {
+  return <textarea ref={ref} className={cn(controlBase, "resize-none", className)} {...rest} />;
+});
 
 export function Select(props: SelectHTMLAttributes<HTMLSelectElement>) {
   const { className, children, ...rest } = props;
