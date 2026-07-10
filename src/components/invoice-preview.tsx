@@ -4,6 +4,7 @@ import {
   computeTax,
   estimateTds,
   formatCurrency,
+  formatDate,
   lineItemAmount,
   numberToWords,
   subtotal,
@@ -14,15 +15,15 @@ interface Props {
   invoice: InvoiceState;
 }
 
-function formatDate(iso: string): string {
-  if (!iso) return "—";
-  const d = new Date(`${iso}T00:00:00`);
-  if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleDateString("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
+function DetailRow({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
+  return (
+    <div className="flex items-baseline justify-between gap-6">
+      <span className="shrink-0 text-[#999]">{label}</span>
+      <span className={mono ? "font-mono text-[#111] select-all" : "text-[#111]"}>
+        {value}
+      </span>
+    </div>
+  );
 }
 
 export function InvoicePreview({ invoice }: Props) {
@@ -281,27 +282,21 @@ export function InvoicePreview({ invoice }: Props) {
               <p className="text-[11px] font-semibold uppercase tracking-wide text-[#999]">
                 Payment details
               </p>
-              <div className="mt-1.5 space-y-0.5 text-[#666]">
-                {profile.bank.accountName && <p>{profile.bank.accountName}</p>}
-                {profile.bank.bankName && <p>{profile.bank.bankName}</p>}
+              <div className="mt-2 space-y-1.5">
+                {profile.bank.accountName && (
+                  <DetailRow label="Account name" value={profile.bank.accountName} />
+                )}
+                {profile.bank.bankName && (
+                  <DetailRow label="Bank name" value={profile.bank.bankName} />
+                )}
                 {profile.bank.accountNumber && (
-                  <p>
-                    A/C{" "}
-                    <span className="font-mono">
-                      {profile.bank.accountNumber}
-                    </span>
-                  </p>
+                  <DetailRow label="Account no." value={profile.bank.accountNumber} mono />
                 )}
                 {profile.bank.ifsc && (
-                  <p>
-                    IFSC <span className="font-mono">{profile.bank.ifsc}</span>
-                  </p>
+                  <DetailRow label="IFSC code" value={profile.bank.ifsc} mono />
                 )}
                 {profile.bank.swiftCode && (
-                  <p>
-                    SWIFT{" "}
-                    <span className="font-mono">{profile.bank.swiftCode}</span>
-                  </p>
+                  <DetailRow label="SWIFT code" value={profile.bank.swiftCode} mono />
                 )}
               </div>
             </div>
@@ -310,9 +305,9 @@ export function InvoicePreview({ invoice }: Props) {
                 <p className="text-[11px] font-semibold uppercase tracking-wide text-[#999]">
                   UPI
                 </p>
-                <p className="mt-1.5 font-mono text-[#666]">
-                  {profile.bank.upiId}
-                </p>
+                <div className="mt-2">
+                  <DetailRow label="UPI ID" value={profile.bank.upiId} mono />
+                </div>
               </div>
             )}
           </div>

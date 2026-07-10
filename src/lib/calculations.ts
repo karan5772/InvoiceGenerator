@@ -2,6 +2,13 @@ import { CURRENCIES, Currency, GstTreatment, LineItem } from "./types";
 
 export const GST_RATE = 18;
 
+export function formatDate(iso: string): string {
+  if (!iso) return "—";
+  const d = new Date(`${iso}T00:00:00`);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+}
+
 export function lineItemAmount(item: LineItem): number {
   return (Number(item.quantity) || 0) * (Number(item.rate) || 0);
 }

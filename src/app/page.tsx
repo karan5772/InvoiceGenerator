@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { pdf } from "@react-pdf/renderer";
+import { toPng } from "html-to-image";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { CardSection } from "@/components/ui/card";
@@ -11,6 +13,7 @@ import { ItemsForm } from "@/components/form/items-form";
 import { TaxSettingsForm } from "@/components/form/tax-settings-form";
 import { NotesForm } from "@/components/form/notes-form";
 import { InvoicePreview } from "@/components/invoice-preview";
+import { InvoicePdfDocument, preloadInvoicePdfFonts } from "@/components/invoice-pdf";
 import { nextInvoiceNumber, usePersistedState } from "@/lib/storage";
 import { addDaysISO, createSampleInvoice, todayISO } from "@/lib/sample-data";
 import { InvoiceState, makeEmptyItem } from "@/lib/types";
@@ -70,6 +73,9 @@ export default function Home() {
     createSampleInvoice(),
   );
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [isDownloadingImage, setIsDownloadingImage] = useState(false);
+  const exportRef = useRef<HTMLDivElement>(null);
 
   const tax = useMemo(
     () => computeTax(invoice.items, invoice.meta.gstTreatment),
@@ -139,13 +145,44 @@ export default function Home() {
     }));
   }
 
-  function handleDownload() {
-    window.print();
+  async function handleDownload() {
+    setIsDownloading(true);
+    try {
+      await preloadInvoicePdfFonts();
+      const blob = await pdf(<InvoicePdfDocument invoice={invoice} />).toBlob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${invoice.meta.number.trim() || "invoice"}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } finally {
+      setIsDownloading(false);
+    }
+  }
+
+  async function handleDownloadImage() {
+    setIsDownloadingImage(true);
+    try {
+      const node = exportRef.current?.querySelector<HTMLElement>("#invoice-preview-root");
+      if (!node) return;
+      const dataUrl = await toPng(node, { pixelRatio: 2, backgroundColor: "#ffffff" });
+      const a = document.createElement("a");
+      a.href = dataUrl;
+      a.download = `${invoice.meta.number.trim() || "invoice"}.png`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    } finally {
+      setIsDownloadingImage(false);
+    }
   }
 
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="no-print sticky top-0 z-20 border-b border-border-subtle bg-background/80 backdrop-blur-md">
+      <header className="sticky top-0 z-20 border-b border-border-subtle bg-background/80 backdrop-blur-md">
         <div className="mx-auto flex h-14 max-w-[1400px] items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-2">
             <div className="flex size-6 items-center justify-center rounded-md bg-foreground text-background">
@@ -185,7 +222,32 @@ export default function Home() {
               </>
             )}
             <ThemeToggle />
-            <Button size="sm" onClick={handleDownload}>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={handleDownloadImage}
+              disabled={isDownloadingImage}
+              title="Download as PNG image"
+            >
+              <svg width="13" height="13" viewBox="0 0 15 15" fill="none">
+                <path
+                  d="M2.5 2.5h10v10h-10z"
+                  stroke="currentColor"
+                  strokeWidth="1.1"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M2.5 9.5l2.8-2.8a1 1 0 0 1 1.4 0l1.3 1.3M8.5 6.5l.9-.9a1 1 0 0 1 1.4 0l1.7 1.7"
+                  stroke="currentColor"
+                  strokeWidth="1.1"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <circle cx="5.5" cy="5.2" r="0.8" fill="currentColor" stroke="none" />
+              </svg>
+              {isDownloadingImage ? "Generating…" : "Download Image"}
+            </Button>
+            <Button size="sm" onClick={handleDownload} disabled={isDownloading}>
               <svg width="13" height="13" viewBox="0 0 15 15" fill="none">
                 <path
                   d="M7.5 2v7.5m0 0L4.5 6.5m3 3l3-3M2.5 11.5v1a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1"
@@ -195,13 +257,13 @@ export default function Home() {
                   strokeLinejoin="round"
                 />
               </svg>
-              Download PDF
+              {isDownloading ? "Generating…" : "Download PDF"}
             </Button>
           </div>
         </div>
       </header>
 
-      <main className="no-print mx-auto grid w-full max-w-[1400px] flex-1 grid-cols-1 gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-8 lg:py-8">
+      <main className="mx-auto grid w-full max-w-[1400px] flex-1 grid-cols-1 gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-8 lg:py-8">
         <div className="flex flex-col gap-4">
           <CardSection
             step={1}
@@ -322,7 +384,13 @@ export default function Home() {
         </div>
       </main>
 
-      <div className="print-only">
+      {/* Always full-size, untransformed copy for image export — kept off-screen
+          so the on-screen scale-to-fit transform never affects the exported PNG. */}
+      <div
+        ref={exportRef}
+        style={{ position: "fixed", top: 0, left: "-99999px", pointerEvents: "none" }}
+        aria-hidden="true"
+      >
         <InvoicePreview invoice={invoice} />
       </div>
 
