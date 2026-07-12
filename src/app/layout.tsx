@@ -15,21 +15,24 @@ const geistMono = Geist_Mono({
 });
 
 const DESCRIPTION =
-  "Create a GST-compliant invoice in minutes, free. Built for Indian freelancers: CGST/SGST/IGST handled automatically, clean invoices without a GSTIN, exports under LUT, TDS notes, and real PDF downloads. No sign-up, no watermark.";
+  "Instant, free invoice generator for Indian freelancers. No sign-up, no watermark: GST invoices with automatic CGST/SGST/IGST, clean invoices without a GSTIN, exports under LUT, TDS notes, and real PDF downloads.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
   title: {
-    default: "Free Invoice Generator for Indian Freelancers (GST & Non-GST)",
+    default: "Free Invoice Generator for Indian Freelancers — Instant, No Sign-Up",
     template: `%s — ${SITE.name}`,
   },
   description: DESCRIPTION,
   keywords: [
-    "invoice generator india",
     "free invoice generator",
+    "invoice generator no sign up",
+    "instant invoice generator",
+    "invoice generator india",
     "GST invoice generator",
     "freelancer invoice",
     "invoice without GSTIN",
+    "invoice generator without watermark",
     "export invoice LUT",
     "TDS 194J",
     "CGST SGST IGST invoice",
@@ -42,12 +45,12 @@ export const metadata: Metadata = {
     locale: "en_IN",
     url: "/",
     siteName: SITE.name,
-    title: "Free Invoice Generator for Indian Freelancers (GST & Non-GST)",
+    title: "Free Invoice Generator for Indian Freelancers — Instant, No Sign-Up",
     description: DESCRIPTION,
   },
   twitter: {
     card: "summary_large_image",
-    title: "Free Invoice Generator for Indian Freelancers",
+    title: "Free Invoice Generator for Indian Freelancers — Instant, No Sign-Up",
     description: DESCRIPTION,
   },
   robots: {

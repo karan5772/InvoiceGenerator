@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import QRCode from "qrcode";
 import { GitHubIcon, SiteHeader, TricolorBar } from "@/components/site-header";
 import { SITE } from "@/lib/site";
 import { cn } from "@/lib/cn";
@@ -182,7 +183,15 @@ const REVIEWS = [
 const FAQS = [
   {
     q: "Is this invoice generator really free?",
-    a: "Yes. Every feature is free: GST invoices, PDF and PNG downloads, exports under LUT, TDS notes. There is no sign-up, no watermark, and no premium tier, and the project is open source.",
+    a: "Yes, completely free. Every feature is included: GST invoices, PDF and PNG downloads, exports under LUT, TDS notes. There is no premium tier, no hidden charges, no watermark, and the project is open source.",
+  },
+  {
+    q: "Do I need to sign up or create an account?",
+    a: "No. There is no sign-up, no email, no OTP. Open the page, fill in your details, and download the invoice. That's the entire flow.",
+  },
+  {
+    q: "How quickly can I create an invoice?",
+    a: "Instantly. Your first invoice takes two to three minutes of filling in details. After that it's under a minute: your business details and bank information are saved in your browser, and 'New invoice' carries them over with the next invoice number and fresh dates.",
   },
   {
     q: "Can I create an invoice without a GSTIN?",
@@ -197,8 +206,16 @@ const FAQS = [
     a: "Yes. Choose export under LUT and the invoice is zero-rated with the exact declaration text, in USD, EUR, GBP and other currencies, with SWIFT details for wire transfers.",
   },
   {
+    q: "Does it add a watermark or its own branding to my invoice?",
+    a: "No. The downloaded PDF and PNG contain only your details: your name or logo, your signature if you add one, and nothing else.",
+  },
+  {
+    q: "Is there a limit on how many invoices I can create?",
+    a: "No limits. Create as many invoices as you need, whenever you need them. There is no quota, trial period, or paid unlock.",
+  },
+  {
     q: "Where is my invoice data stored?",
-    a: "In your browser only. There is no server and no account; your details and invoices never leave your device.",
+    a: "In your browser only. There is no server and no account; your details and invoices never leave your device. Clearing your browser data removes them, so download PDFs of anything you need to keep.",
   },
   {
     q: "What is TDS and why is my payment smaller than the invoice?",
@@ -289,9 +306,18 @@ function InvoiceMock() {
   );
 }
 
+const UPI_LINK = `upi://pay?pa=${SITE.upi}&pn=${encodeURIComponent("Karan Choudhary")}&cu=INR`;
+
 export default function Landing() {
   const [copiedUpi, setCopiedUpi] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [upiQr, setUpiQr] = useState("");
+
+  useEffect(() => {
+    QRCode.toDataURL(UPI_LINK, { margin: 1, width: 320 })
+      .then(setUpiQr)
+      .catch(() => {});
+  }, []);
 
   function copy(text: string, set: (v: boolean) => void) {
     navigator.clipboard.writeText(text).then(() => {
@@ -399,10 +425,10 @@ export default function Landing() {
         {/* Features */}
         <section id="features" className="border-b border-border-subtle">
           <div className="mx-auto w-full max-w-[1100px] px-4 py-16 sm:px-6 sm:py-24">
-            <h2 className="text-2xl font-semibold tracking-tight text-text-primary sm:text-3xl">
+            <h2 className="text-center text-2xl font-semibold tracking-tight text-text-primary sm:text-3xl">
               Everything an Indian freelancer needs
             </h2>
-            <p className="mt-3 max-w-xl text-sm leading-relaxed text-text-secondary">
+            <p className="mx-auto mt-3 max-w-xl text-center text-sm leading-relaxed text-text-secondary">
               Built around actual Indian tax rules: GST thresholds, Rule 46 invoice
               fields, TDS, and LUT exports. Not a generic template with a ₹ pasted on.
             </p>
@@ -432,7 +458,7 @@ export default function Landing() {
         {/* Audience */}
         <section className="border-b border-border-subtle bg-surface-secondary/50">
           <div className="mx-auto w-full max-w-[1100px] px-4 py-16 sm:px-6 sm:py-24">
-            <h2 className="text-2xl font-semibold tracking-tight text-text-primary sm:text-3xl">
+            <h2 className="text-center text-2xl font-semibold tracking-tight text-text-primary sm:text-3xl">
               Made for wherever you are in the journey
             </h2>
             <div className="mt-12 grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -472,7 +498,7 @@ export default function Landing() {
         {/* Reviews */}
         <section id="reviews" className="border-b border-border-subtle">
           <div className="mx-auto w-full max-w-[1100px] px-4 py-16 sm:px-6 sm:py-24">
-            <h2 className="text-2xl font-semibold tracking-tight text-text-primary sm:text-3xl">
+            <h2 className="text-center text-2xl font-semibold tracking-tight text-text-primary sm:text-3xl">
               What freelancers say
             </h2>
             <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -502,6 +528,28 @@ export default function Landing() {
                   </figcaption>
                 </figure>
               ))}
+            </div>
+            <div className="mt-10 flex flex-col items-center gap-3 text-center">
+              <p className="text-[13px] text-text-secondary">
+                Used it for a real client? I&apos;d love to feature your experience here.
+              </p>
+              <div className="flex flex-wrap items-center justify-center gap-3">
+                <a
+                  href={`${SITE.github}/discussions`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex h-9 items-center gap-2 rounded-md border border-border-default px-4 text-xs font-medium text-text-primary transition-colors hover:bg-surface-secondary"
+                >
+                  <GitHubIcon size={13} />
+                  Share feedback on GitHub
+                </a>
+                <a
+                  href={`mailto:${SITE.email}?subject=${encodeURIComponent("Invoice tool review")}`}
+                  className="inline-flex h-9 items-center rounded-md border border-border-default px-4 text-xs font-medium text-text-primary transition-colors hover:bg-surface-secondary"
+                >
+                  Email a review
+                </a>
+              </div>
             </div>
           </div>
         </section>
@@ -548,30 +596,57 @@ export default function Landing() {
         {/* Support / Donate */}
         <section id="support" className="border-b border-border-subtle">
           <div className="mx-auto w-full max-w-[1100px] px-4 py-16 sm:px-6 sm:py-24">
-            <h2 className="text-2xl font-semibold tracking-tight text-text-primary sm:text-3xl">
+            <h2 className="text-center text-2xl font-semibold tracking-tight text-text-primary sm:text-3xl">
               Keep it free for the next freelancer
             </h2>
+            <p className="mx-auto mt-3 max-w-md text-center text-sm leading-relaxed text-text-secondary">
+              No paywall is coming, ever. If the tool saved you time, there are two ways
+              to help, and both take under a minute.
+            </p>
             <div className="mt-12 grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="rounded-xl border border-amber-500/25 bg-amber-500/[0.06] p-6">
-                <h3 className="text-base font-semibold text-text-primary">
-                  Buy me a chai ☕
-                </h3>
-                <p className="mt-2 text-[13px] leading-relaxed text-text-secondary">
-                  This tool costs nothing and always will. If it saved you an afternoon
-                  of invoice confusion, a small UPI tip keeps the chai and the updates
-                  flowing.
-                </p>
-                <div className="mt-4 flex items-center gap-2">
-                  <code className="flex-1 truncate rounded-md border border-border-default bg-surface px-3 py-2 font-mono text-xs text-text-primary">
-                    {SITE.upi}
-                  </code>
-                  <button
-                    type="button"
-                    onClick={() => copy(SITE.upi, setCopiedUpi)}
-                    className="inline-flex h-9 shrink-0 items-center rounded-md bg-foreground px-3 text-xs font-medium text-background transition-opacity hover:opacity-90"
-                  >
-                    {copiedUpi ? "Copied!" : "Copy UPI"}
-                  </button>
+                <div className="flex flex-col gap-6 sm:flex-row">
+                  <div className="flex-1">
+                    <h3 className="text-base font-semibold text-text-primary">
+                      Buy me a chai ☕
+                    </h3>
+                    <p className="mt-2 text-[13px] leading-relaxed text-text-secondary">
+                      Scan with any UPI app (GPay, PhonePe, Paytm) or copy the UPI ID.
+                      Any amount works, and it keeps the chai and the updates flowing.
+                    </p>
+                    <div className="mt-4 flex items-center gap-2">
+                      <code className="min-w-0 flex-1 truncate rounded-md border border-border-default bg-surface px-3 py-2 font-mono text-xs text-text-primary">
+                        {SITE.upi}
+                      </code>
+                      <button
+                        type="button"
+                        onClick={() => copy(SITE.upi, setCopiedUpi)}
+                        className="inline-flex h-9 shrink-0 items-center rounded-md bg-foreground px-3 text-xs font-medium text-background transition-opacity hover:opacity-90"
+                      >
+                        {copiedUpi ? "Copied!" : "Copy UPI"}
+                      </button>
+                    </div>
+                    <a
+                      href={UPI_LINK}
+                      className="mt-3 inline-flex h-9 items-center rounded-md border border-border-default px-4 text-xs font-medium text-text-primary transition-colors hover:bg-surface-secondary sm:hidden"
+                    >
+                      Open UPI app
+                    </a>
+                  </div>
+                  <div className="flex shrink-0 flex-col items-center gap-2 self-center">
+                    {upiQr ? (
+                      // eslint-disable-next-line @next/next/no-img-element -- build-time data URL, no optimization needed
+                      <img
+                        src={upiQr}
+                        alt={`UPI QR code for ${SITE.upi}`}
+                        className="size-36 rounded-lg border border-border-default bg-white p-2"
+                        style={{ colorScheme: "light" }}
+                      />
+                    ) : (
+                      <div className="size-36 rounded-lg border border-border-default bg-surface" />
+                    )}
+                    <span className="text-[11px] text-text-tertiary">Scan to pay</span>
+                  </div>
                 </div>
               </div>
               <div className="rounded-xl border border-border-subtle bg-surface p-6">
@@ -583,48 +658,65 @@ export default function Landing() {
                   who&apos;s still making invoices in Word: all of it genuinely helps,
                   and all of it is free.
                 </p>
-                <a
-                  href={SITE.github}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-4 inline-flex h-9 items-center gap-2 rounded-md border border-border-default px-4 text-xs font-medium text-text-primary transition-colors hover:bg-surface-secondary"
-                >
-                  <GitHubIcon size={13} />
-                  Open the repo
-                </a>
+                <div className="mt-4 flex flex-wrap gap-3">
+                  <a
+                    href={SITE.github}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex h-9 items-center gap-2 rounded-md border border-border-default px-4 text-xs font-medium text-text-primary transition-colors hover:bg-surface-secondary"
+                  >
+                    <span className="text-amber-500">
+                      <StarIcon size={12} />
+                    </span>
+                    Star the repo
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => copy(window.location.origin, setCopiedLink)}
+                    className="inline-flex h-9 items-center rounded-md border border-border-default px-4 text-xs font-medium text-text-primary transition-colors hover:bg-surface-secondary"
+                  >
+                    {copiedLink ? "Link copied!" : "Copy link to share"}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </section>
 
         {/* FAQ */}
-        <section id="faq" className="border-b border-border-subtle">
+        <section id="faq" className="border-b border-border-subtle bg-surface-secondary/50">
           <div className="mx-auto w-full max-w-[1100px] px-4 py-16 sm:px-6 sm:py-24">
-            <h2 className="text-2xl font-semibold tracking-tight text-text-primary sm:text-3xl">
+            <h2 className="text-center text-2xl font-semibold tracking-tight text-text-primary sm:text-3xl">
               Common questions
             </h2>
-            <div className="mt-8 max-w-2xl">
+            <p className="mx-auto mt-3 max-w-md text-center text-sm leading-relaxed text-text-secondary">
+              Free, instant, and no sign-up — and everything else you might be
+              wondering.
+            </p>
+            <div className="mx-auto mt-10 max-w-2xl overflow-hidden rounded-xl border border-border-subtle bg-surface shadow-sm">
               {FAQS.map((f) => (
-                <details key={f.q} className="group border-b border-border-subtle py-4">
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-medium text-text-primary [&::-webkit-details-marker]:hidden">
+                <details
+                  key={f.q}
+                  className="group border-b border-border-subtle last:border-b-0"
+                >
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 text-sm font-medium text-text-primary transition-colors hover:bg-surface-secondary [&::-webkit-details-marker]:hidden">
                     {f.q}
                     <svg
-                      width="13"
-                      height="13"
+                      width="14"
+                      height="14"
                       viewBox="0 0 15 15"
                       fill="none"
-                      className="shrink-0 text-text-tertiary transition-transform group-open:rotate-180"
+                      className="shrink-0 text-text-tertiary transition-transform duration-200 group-open:rotate-45"
                     >
                       <path
-                        d="M3.5 5.5l4 4 4-4"
+                        d="M7.5 2v11M2 7.5h11"
                         stroke="currentColor"
                         strokeWidth="1.3"
                         strokeLinecap="round"
-                        strokeLinejoin="round"
                       />
                     </svg>
                   </summary>
-                  <p className="mt-3 max-w-xl text-[13px] leading-relaxed text-text-secondary">
+                  <p className="px-5 pb-5 text-[13px] leading-relaxed text-text-secondary">
                     {f.a}
                   </p>
                 </details>
