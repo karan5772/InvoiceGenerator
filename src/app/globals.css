@@ -92,6 +92,61 @@ body {
   }
 }
 
+/* Landing hero background grid */
+.hero-grid {
+  background-image:
+    linear-gradient(var(--border-subtle) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border-subtle) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse 90% 80% at 50% 40%, black 25%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse 90% 80% at 50% 40%, black 25%, transparent 75%);
+}
+
+/* Research article — GFM footnotes */
+.research-article sup a {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+  padding: 0 1px;
+}
+.research-article [data-footnotes] {
+  margin-top: 3.5rem;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 2rem;
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+.research-article [data-footnotes] h2 {
+  margin: 0;
+  border: none;
+  padding: 0;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-tertiary);
+}
+.research-article [data-footnotes] ol {
+  margin-top: 0.75rem;
+  padding-left: 1.25rem;
+  list-style: decimal;
+}
+.research-article [data-footnotes] li {
+  margin-top: 0.4rem;
+  padding-left: 0.25rem;
+}
+.research-article [data-footnotes] li::before {
+  display: none;
+}
+.research-article [data-footnotes] p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-tertiary);
+}
+.research-article [data-footnote-backref] {
+  text-decoration: none;
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar {
   width: 10px;
