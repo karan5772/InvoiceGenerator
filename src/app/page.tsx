@@ -357,6 +357,16 @@ export default function Landing() {
     })),
   };
 
+  // Site-name schema — lets Google show "Invoice for Indian Freelancers"
+  // in results instead of the bare domain.
+  const webSiteSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: SITE.name,
+    alternateName: "Free Invoice Generator for Indian Freelancers",
+    url: SITE.url,
+  };
+
   return (
     <div className="flex min-h-screen flex-col">
       <script
@@ -366,6 +376,10 @@ export default function Landing() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(webSiteSchema) }}
       />
       <TricolorBar />
       <SiteHeader />
