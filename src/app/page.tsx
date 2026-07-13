@@ -740,9 +740,27 @@ export default function Landing() {
                 took longer to figure out than the work it billed: what a SAC code was,
                 whether I needed GST, why TDS made the payment smaller. This is the
                 tool I wish someone had handed me on day one. No accounts, no tracking,
-                no paywall.
+                no paywall. When I&apos;m not maintaining this, I build websites and
+                web apps for clients.
               </p>
-              <div className="mt-6 flex items-center justify-center gap-3">
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+                <a
+                  href={`${SITE.portfolio}?ref=invoice-tool`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex h-9 items-center gap-2 rounded-md bg-foreground px-4 text-xs font-medium text-background shadow-sm transition-opacity hover:opacity-90"
+                >
+                  Hire me for a project
+                  <svg width="12" height="12" viewBox="0 0 15 15" fill="none">
+                    <path
+                      d="M2.5 7.5h10m0 0L8 3m4.5 4.5L8 12"
+                      stroke="currentColor"
+                      strokeWidth="1.3"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </a>
                 <a
                   href={SITE.github}
                   target="_blank"
@@ -796,6 +814,18 @@ export default function Landing() {
           </p>
           <p className="text-[11px] text-text-tertiary">
             Made in India, for Indian freelancers · Free forever
+          </p>
+          <p className="text-[11px] text-text-tertiary">
+            Built by{" "}
+            <a
+              href={`${SITE.portfolio}?ref=invoice-tool`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:text-text-secondary"
+            >
+              Karan Choudhary
+            </a>
+            , available for freelance web projects
           </p>
         </div>
       </footer>

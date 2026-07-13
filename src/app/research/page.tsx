@@ -260,9 +260,21 @@ export default function ResearchPage() {
       </main>
 
       <footer className="border-t border-border-subtle">
-        <div className="mx-auto flex w-full max-w-[1100px] items-center justify-center px-4 py-6 sm:px-6">
+        <div className="mx-auto flex w-full max-w-[1100px] flex-col items-center gap-1.5 px-4 py-6 sm:px-6">
           <p className="text-[11px] text-text-tertiary">
             Made in India, for Indian freelancers · Free forever
+          </p>
+          <p className="text-[11px] text-text-tertiary">
+            Built by{" "}
+            <a
+              href="https://karanchoudhary.dev?ref=invoice-tool"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:text-text-secondary"
+            >
+              Karan Choudhary
+            </a>
+            , available for freelance web projects
           </p>
         </div>
       </footer>
