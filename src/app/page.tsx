@@ -183,7 +183,7 @@ const REVIEWS = [
 const FAQS = [
   {
     q: "Is this invoice generator really free?",
-    a: "Yes, completely free. Every feature is included: GST invoices, PDF and PNG downloads, exports under LUT, TDS notes. There is no premium tier, no hidden charges, no watermark, and the project is open source.",
+    a: "Yes, completely free. Every feature is included: GST invoices, PDF and PNG downloads, exports under LUT, TDS notes. Everything the tool does today is free and stays free — no hidden charges, no watermark, and the project is open source. If a paid tier ever exists, it will only add new features like cloud sync or payment reminders, never lock away what's free now.",
   },
   {
     q: "Do I need to sign up or create an account?",
@@ -211,7 +211,7 @@ const FAQS = [
   },
   {
     q: "Is there a limit on how many invoices I can create?",
-    a: "No limits. Create as many invoices as you need, whenever you need them. There is no quota, trial period, or paid unlock.",
+    a: "No limits. Create as many invoices as you need, whenever you need them. There is no quota or trial period.",
   },
   {
     q: "Where is my invoice data stored?",
@@ -578,9 +578,10 @@ export default function Landing() {
                   Free and open source
                 </h2>
                 <p className="mt-3 text-sm leading-relaxed opacity-70">
-                  There is no premium tier and nothing locked behind a paywall. If this
-                  tool helped you, star the repo on GitHub and share it with a
-                  freelancer friend. That&apos;s how it reaches the people who need it.
+                  Everything you see here is free and stays free — the project is open
+                  source. If this tool helped you, star the repo on GitHub and share it
+                  with a freelancer friend. That&apos;s how it reaches the people who
+                  need it.
                 </p>
                 <div className="mt-7 flex flex-col items-center gap-3 sm:flex-row">
                   <a
@@ -614,8 +615,8 @@ export default function Landing() {
               Keep it free for the next freelancer
             </h2>
             <p className="mx-auto mt-3 max-w-md text-center text-sm leading-relaxed text-text-secondary">
-              No paywall is coming, ever. If the tool saved you time, there are two ways
-              to help, and both take under a minute.
+              The tool you&apos;re using today stays free. If it saved you time, there
+              are two ways to help, and both take under a minute.
             </p>
             <div className="mt-12 grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="rounded-xl border border-amber-500/25 bg-amber-500/[0.06] p-6">
@@ -625,8 +626,9 @@ export default function Landing() {
                       Buy me a chai ☕
                     </h3>
                     <p className="mt-2 text-[13px] leading-relaxed text-text-secondary">
-                      Scan with any UPI app (GPay, PhonePe, Paytm) or copy the UPI ID.
-                      Any amount works, and it keeps the chai and the updates flowing.
+                      The generator costs nothing to use. Scan with any UPI app (GPay,
+                      PhonePe, Paytm) or copy the UPI ID — any amount keeps the chai
+                      and the updates flowing.
                     </p>
                     <div className="mt-4 flex items-center gap-2">
                       <code className="min-w-0 flex-1 truncate rounded-md border border-border-default bg-surface px-3 py-2 font-mono text-xs text-text-primary">
